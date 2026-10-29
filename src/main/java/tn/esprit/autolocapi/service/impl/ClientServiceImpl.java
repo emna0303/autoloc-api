@@ -1,12 +1,12 @@
 package tn.esprit.autolocapi.service.impl;
 
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import tn.esprit.autolocapi.domain.Client;
+import tn.esprit.autolocapi.exception.ResourceNotFoundException;
 import tn.esprit.autolocapi.repository.IClientRepository;
 import tn.esprit.autolocapi.service.IClientService;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -16,7 +16,10 @@ public class ClientServiceImpl implements IClientService {
 
     @Override
     public Client create(Client client) {
-        client.setIdClient(null);
+        if (client.getIdClient() != null) {
+            throw new IllegalArgumentException("Un nouveau client ne doit pas avoir d'identifiant");
+        }
+        verifier(client);
         return clientRepository.save(client);
     }
 
@@ -27,15 +30,14 @@ public class ClientServiceImpl implements IClientService {
 
     @Override
     public Client findById(Long id) {
-        return clientRepository.findById(id).orElse(null);
+        return clientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Client", id));
     }
 
     @Override
     public Client update(Long id, Client client) {
-        Client existant = clientRepository.findById(id).orElse(null);
-        if (existant == null) {
-            return null;
-        }
+        verifier(client);
+        Client existant = findById(id);
         existant.setNom(client.getNom());
         existant.setPrenom(client.getPrenom());
         existant.setEmail(client.getEmail());
@@ -47,6 +49,16 @@ public class ClientServiceImpl implements IClientService {
 
     @Override
     public void delete(Long id) {
+        if (!clientRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Client", id);
+        }
         clientRepository.deleteById(id);
+    }
+
+    private void verifier(Client client) {
+        if (client.getNom() == null || client.getNom().isBlank()
+                || client.getEmail() == null || client.getEmail().isBlank()) {
+            throw new IllegalArgumentException("Le nom et l'e-mail du client sont obligatoires");
+        }
     }
 }

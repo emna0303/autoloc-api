@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,11 +31,11 @@ public class Contrat {
 
     @Column(nullable = false)
     private boolean valide;
-
+    @JsonIgnore
     @OneToOne(optional = false)
     @JoinColumn(name = "id_reservation", nullable = false, unique = true)
     private Reservation reservation;
-
+    @JsonIgnore
     @OneToMany(mappedBy = "contrat", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Paiement> paiements = new ArrayList<>();
 
