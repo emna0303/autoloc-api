@@ -3,60 +3,65 @@ package tn.esprit.autolocapi.service.impl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tn.esprit.autolocapi.domain.Maintenance;
+import tn.esprit.autolocapi.domain.Vehicule;
 import tn.esprit.autolocapi.exception.ResourceNotFoundException;
+import tn.esprit.autolocapi.mapper.MaintenanceMapper;
 import tn.esprit.autolocapi.repository.IMaintenanceRepository;
+import tn.esprit.autolocapi.repository.IVehiculeRepository;
 import tn.esprit.autolocapi.service.IMaintenanceService;
+import tn.esprit.autolocapi.web.dto.MaintenanceRequest;
+import tn.esprit.autolocapi.web.dto.MaintenanceResponse;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class MaintenanceServiceImpl implements IMaintenanceService {
 
     private final IMaintenanceRepository maintenanceRepository;
+    private final IVehiculeRepository vehiculeRepository;
+    private final MaintenanceMapper maintenanceMapper;
 
     @Override
-    public Maintenance create(Maintenance maintenance) {
-        if (maintenance.getIdMaintenance() != null) {
-            throw new IllegalArgumentException("Une nouvelle maintenance ne doit pas avoir d'identifiant");
-        }
-        verifier(maintenance);
-        return maintenanceRepository.save(maintenance);
+    public MaintenanceResponse create(MaintenanceRequest request) {
+        Maintenance maintenance = maintenanceMapper.toEntity(request);
+        maintenance.setVehicule(findVehicule(request.vehiculeId()));
+        return maintenanceMapper.toResponse(maintenanceRepository.save(maintenance));
     }
 
     @Override
-    public List<Maintenance> findAll() {
-        return maintenanceRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<MaintenanceResponse> findAll() {
+        return maintenanceRepository.findAll().stream().map(maintenanceMapper::toResponse).toList();
     }
 
     @Override
-    public Maintenance findById(Long id) {
-        return maintenanceRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Maintenance", id));
+    @Transactional(readOnly = true)
+    public MaintenanceResponse findById(Long id) {
+        return maintenanceMapper.toResponse(getOrThrow(id));
     }
 
     @Override
-    public Maintenance update(Long id, Maintenance maintenance) {
-        verifier(maintenance);
-        Maintenance existante = findById(id);
-        existante.setDateDebut(maintenance.getDateDebut());
-        existante.setDateFin(maintenance.getDateFin());
-        existante.setDescription(maintenance.getDescription());
-        existante.setVehicule(maintenance.getVehicule());
-        return maintenanceRepository.save(existante);
+    public MaintenanceResponse update(Long id, MaintenanceRequest request) {
+        Maintenance maintenance = getOrThrow(id);
+        maintenanceMapper.updateEntity(maintenance, request);
+        maintenance.setVehicule(findVehicule(request.vehiculeId()));
+        return maintenanceMapper.toResponse(maintenanceRepository.save(maintenance));
     }
 
     @Override
     public void delete(Long id) {
-        if (!maintenanceRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Maintenance", id);
-        }
-        maintenanceRepository.deleteById(id);
+        maintenanceRepository.delete(getOrThrow(id));
     }
 
-    private void verifier(Maintenance maintenance) {
-        if (maintenance.getDateDebut() == null || maintenance.getDateFin() == null
-                || maintenance.getDateFin().isBefore(maintenance.getDateDebut())) {
-            throw new IllegalArgumentException("La date de fin ne doit pas être antérieure à la date de début");
-        }
+    private Maintenance getOrThrow(Long id) {
+        return maintenanceRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Maintenance", id));
+    }
+
+    private Vehicule findVehicule(Long vehiculeId) {
+        return vehiculeRepository.findById(vehiculeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Vehicule", vehiculeId));
     }
 }

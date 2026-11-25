@@ -1,13 +1,13 @@
 package tn.esprit.autolocapi.service;
 
-import tn.esprit.autolocapi.domain.Maintenance;
-
 import java.util.List;
+import tn.esprit.autolocapi.web.dto.MaintenanceRequest;
+import tn.esprit.autolocapi.web.dto.MaintenanceResponse;
 
 public interface IMaintenanceService {
-    Maintenance create(Maintenance maintenance);
-    List<Maintenance> findAll();
-    Maintenance findById(Long id);
-    Maintenance update(Long id, Maintenance maintenance);
+    MaintenanceResponse create(MaintenanceRequest request);
+    List<MaintenanceResponse> findAll();
+    MaintenanceResponse findById(Long id);
+    MaintenanceResponse update(Long id, MaintenanceRequest request);
     void delete(Long id);
 }

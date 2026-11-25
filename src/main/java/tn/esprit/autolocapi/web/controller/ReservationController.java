@@ -1,5 +1,6 @@
 package tn.esprit.autolocapi.web.controller;
 
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -8,7 +9,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import tn.esprit.autolocapi.domain.Reservation;
+import tn.esprit.autolocapi.web.dto.ReservationRequest;
+import tn.esprit.autolocapi.web.dto.ReservationResponse;
 import tn.esprit.autolocapi.service.IReservationService;
 
 @RestController
@@ -22,14 +24,14 @@ public class ReservationController {
     @Operation(summary = "Lister les réservations")
     @ApiResponse(responseCode = "200", description = "Liste des réservations")
     @GetMapping
-    public List<Reservation> findAll() { return reservationService.findAll(); }
+    public List<ReservationResponse> findAll() { return reservationService.findAll(); }
 
     @Operation(summary = "Consulter une réservation")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Réservation trouvée"),
             @ApiResponse(responseCode = "404", description = "Réservation introuvable") })
     @GetMapping("/{id}")
-    public Reservation findById(@PathVariable Long id) { return reservationService.findById(id); }
+    public ReservationResponse findById(@PathVariable Long id) { return reservationService.findById(id); }
 
     @Operation(summary = "Créer une réservation")
     @ApiResponses({
@@ -37,7 +39,7 @@ public class ReservationController {
             @ApiResponse(responseCode = "400", description = "Données invalides") })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Reservation create(@RequestBody Reservation reservation) { return reservationService.create(reservation); }
+    public ReservationResponse create(@Valid @RequestBody ReservationRequest request) { return reservationService.create(request); }
 
     @Operation(summary = "Modifier une réservation")
     @ApiResponses({
@@ -45,8 +47,8 @@ public class ReservationController {
             @ApiResponse(responseCode = "400", description = "Données invalides"),
             @ApiResponse(responseCode = "404", description = "Réservation introuvable") })
     @PutMapping("/{id}")
-    public Reservation update(@PathVariable Long id, @RequestBody Reservation reservation) {
-        return reservationService.update(id, reservation);
+    public ReservationResponse update(@PathVariable Long id, @Valid @RequestBody ReservationRequest request) {
+        return reservationService.update(id, request);
     }
 
     @Operation(summary = "Supprimer une réservation")

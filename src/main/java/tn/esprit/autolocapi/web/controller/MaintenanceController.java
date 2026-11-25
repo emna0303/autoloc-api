@@ -1,5 +1,6 @@
 package tn.esprit.autolocapi.web.controller;
 
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -8,7 +9,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import tn.esprit.autolocapi.domain.Maintenance;
+import tn.esprit.autolocapi.web.dto.MaintenanceRequest;
+import tn.esprit.autolocapi.web.dto.MaintenanceResponse;
 import tn.esprit.autolocapi.service.IMaintenanceService;
 
 @RestController
@@ -22,14 +24,14 @@ public class MaintenanceController {
     @Operation(summary = "Lister les maintenances")
     @ApiResponse(responseCode = "200", description = "Liste des maintenances")
     @GetMapping
-    public List<Maintenance> findAll() { return maintenanceService.findAll(); }
+    public List<MaintenanceResponse> findAll() { return maintenanceService.findAll(); }
 
     @Operation(summary = "Consulter une maintenance")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Maintenance trouvée"),
             @ApiResponse(responseCode = "404", description = "Maintenance introuvable") })
     @GetMapping("/{id}")
-    public Maintenance findById(@PathVariable Long id) { return maintenanceService.findById(id); }
+    public MaintenanceResponse findById(@PathVariable Long id) { return maintenanceService.findById(id); }
 
     @Operation(summary = "Créer une maintenance")
     @ApiResponses({
@@ -37,7 +39,7 @@ public class MaintenanceController {
             @ApiResponse(responseCode = "400", description = "Données invalides") })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Maintenance create(@RequestBody Maintenance maintenance) { return maintenanceService.create(maintenance); }
+    public MaintenanceResponse create(@Valid @RequestBody MaintenanceRequest request) { return maintenanceService.create(request); }
 
     @Operation(summary = "Modifier une maintenance")
     @ApiResponses({
@@ -45,8 +47,8 @@ public class MaintenanceController {
             @ApiResponse(responseCode = "400", description = "Données invalides"),
             @ApiResponse(responseCode = "404", description = "Maintenance introuvable") })
     @PutMapping("/{id}")
-    public Maintenance update(@PathVariable Long id, @RequestBody Maintenance maintenance) {
-        return maintenanceService.update(id, maintenance);
+    public MaintenanceResponse update(@PathVariable Long id, @Valid @RequestBody MaintenanceRequest request) {
+        return maintenanceService.update(id, request);
     }
 
     @Operation(summary = "Supprimer une maintenance")

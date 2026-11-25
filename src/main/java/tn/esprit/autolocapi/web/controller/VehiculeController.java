@@ -1,5 +1,6 @@
 package tn.esprit.autolocapi.web.controller;
 
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -7,7 +8,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import tn.esprit.autolocapi.domain.Vehicule;
+import tn.esprit.autolocapi.web.dto.VehiculeRequest;
+import tn.esprit.autolocapi.web.dto.VehiculeResponse;
 import tn.esprit.autolocapi.service.IVehiculeService;
 
 import java.util.List;
@@ -23,7 +25,7 @@ public class VehiculeController {
     @Operation(summary = "Lister les véhicules")
     @ApiResponse(responseCode = "200", description = "Liste des véhicules")
     @GetMapping
-    public List<Vehicule> findAll() {
+    public List<VehiculeResponse> findAll() {
         return vehiculeService.findAll();
     }
 
@@ -32,7 +34,7 @@ public class VehiculeController {
             @ApiResponse(responseCode = "200", description = "Véhicule trouvé"),
             @ApiResponse(responseCode = "404", description = "Véhicule introuvable")})
     @GetMapping("/{id}")
-    public Vehicule findById(@PathVariable Long id) {
+    public VehiculeResponse findById(@PathVariable Long id) {
         return vehiculeService.findById(id);
     }
 
@@ -42,8 +44,8 @@ public class VehiculeController {
             @ApiResponse(responseCode = "400", description = "Données invalides")})
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Vehicule create(@RequestBody Vehicule vehicule) {
-        return vehiculeService.create(vehicule);
+    public VehiculeResponse create(@Valid @RequestBody VehiculeRequest request) {
+        return vehiculeService.create(request);
     }
 
     @Operation(summary = "Modifier un véhicule")
@@ -52,8 +54,8 @@ public class VehiculeController {
             @ApiResponse(responseCode = "400", description = "Données invalides"),
             @ApiResponse(responseCode = "404", description = "Véhicule introuvable")})
     @PutMapping("/{id}")
-    public Vehicule update(@PathVariable Long id, @RequestBody Vehicule vehicule) {
-        return vehiculeService.update(id, vehicule);
+    public VehiculeResponse update(@PathVariable Long id, @Valid @RequestBody VehiculeRequest request) {
+        return vehiculeService.update(id, request);
     }
 
     @Operation(summary = "Supprimer un véhicule")

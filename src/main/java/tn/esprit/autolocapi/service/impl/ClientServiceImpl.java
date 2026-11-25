@@ -3,62 +3,55 @@ package tn.esprit.autolocapi.service.impl;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import tn.esprit.autolocapi.domain.Client;
 import tn.esprit.autolocapi.exception.ResourceNotFoundException;
+import tn.esprit.autolocapi.mapper.ClientMapper;
 import tn.esprit.autolocapi.repository.IClientRepository;
 import tn.esprit.autolocapi.service.IClientService;
+import tn.esprit.autolocapi.web.dto.ClientRequest;
+import tn.esprit.autolocapi.web.dto.ClientResponse;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ClientServiceImpl implements IClientService {
 
     private final IClientRepository clientRepository;
+    private final ClientMapper clientMapper;
 
     @Override
-    public Client create(Client client) {
-        if (client.getIdClient() != null) {
-            throw new IllegalArgumentException("Un nouveau client ne doit pas avoir d'identifiant");
-        }
-        verifier(client);
-        return clientRepository.save(client);
+    public ClientResponse create(ClientRequest request) {
+        Client client = clientMapper.toEntity(request);
+        return clientMapper.toResponse(clientRepository.save(client));
     }
 
     @Override
-    public List<Client> findAll() {
-        return clientRepository.findAll();
+    @Transactional(readOnly = true)
+    public List<ClientResponse> findAll() {
+        return clientRepository.findAll().stream().map(clientMapper::toResponse).toList();
     }
 
     @Override
-    public Client findById(Long id) {
-        return clientRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Client", id));
+    @Transactional(readOnly = true)
+    public ClientResponse findById(Long id) {
+        return clientMapper.toResponse(getOrThrow(id));
     }
 
     @Override
-    public Client update(Long id, Client client) {
-        verifier(client);
-        Client existant = findById(id);
-        existant.setNom(client.getNom());
-        existant.setPrenom(client.getPrenom());
-        existant.setEmail(client.getEmail());
-        existant.setTelephone(client.getTelephone());
-        existant.setNumPermis(client.getNumPermis());
-        existant.setDateInscription(client.getDateInscription());
-        return clientRepository.save(existant);
+    public ClientResponse update(Long id, ClientRequest request) {
+        Client client = getOrThrow(id);
+        clientMapper.updateEntity(client, request);
+        return clientMapper.toResponse(clientRepository.save(client));
     }
 
     @Override
     public void delete(Long id) {
-        if (!clientRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Client", id);
-        }
-        clientRepository.deleteById(id);
+        clientRepository.delete(getOrThrow(id));
     }
 
-    private void verifier(Client client) {
-        if (client.getNom() == null || client.getNom().isBlank()
-                || client.getEmail() == null || client.getEmail().isBlank()) {
-            throw new IllegalArgumentException("Le nom et l'e-mail du client sont obligatoires");
-        }
+    private Client getOrThrow(Long id) {
+        return clientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Client", id));
     }
 }

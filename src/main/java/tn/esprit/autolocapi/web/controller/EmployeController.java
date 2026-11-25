@@ -1,5 +1,6 @@
 package tn.esprit.autolocapi.web.controller;
 
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -8,7 +9,8 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import tn.esprit.autolocapi.domain.Employe;
+import tn.esprit.autolocapi.web.dto.EmployeRequest;
+import tn.esprit.autolocapi.web.dto.EmployeResponse;
 import tn.esprit.autolocapi.service.IEmployeService;
 
 @RestController
@@ -22,14 +24,14 @@ public class EmployeController {
     @Operation(summary = "Lister les employés")
     @ApiResponse(responseCode = "200", description = "Liste des employés")
     @GetMapping
-    public List<Employe> findAll() { return employeService.findAll(); }
+    public List<EmployeResponse> findAll() { return employeService.findAll(); }
 
     @Operation(summary = "Consulter un employé")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Employé trouvé"),
             @ApiResponse(responseCode = "404", description = "Employé introuvable") })
     @GetMapping("/{id}")
-    public Employe findById(@PathVariable Long id) { return employeService.findById(id); }
+    public EmployeResponse findById(@PathVariable Long id) { return employeService.findById(id); }
 
     @Operation(summary = "Créer un employé")
     @ApiResponses({
@@ -37,7 +39,7 @@ public class EmployeController {
             @ApiResponse(responseCode = "400", description = "Données invalides") })
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Employe create(@RequestBody Employe employe) { return employeService.create(employe); }
+    public EmployeResponse create(@Valid @RequestBody EmployeRequest request) { return employeService.create(request); }
 
     @Operation(summary = "Modifier un employé")
     @ApiResponses({
@@ -45,8 +47,8 @@ public class EmployeController {
             @ApiResponse(responseCode = "400", description = "Données invalides"),
             @ApiResponse(responseCode = "404", description = "Employé introuvable") })
     @PutMapping("/{id}")
-    public Employe update(@PathVariable Long id, @RequestBody Employe employe) {
-        return employeService.update(id, employe);
+    public EmployeResponse update(@PathVariable Long id, @Valid @RequestBody EmployeRequest request) {
+        return employeService.update(id, request);
     }
 
     @Operation(summary = "Supprimer un employé")
